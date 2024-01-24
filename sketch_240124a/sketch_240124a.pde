@@ -5,6 +5,7 @@ int dx = 5;
 int dy = 5;
 int score = 0;
 int life = 3;
+int level = 1;
 
 int numObjects = 5;  // Jumlah objek
 float[] objectX = new float[numObjects];
@@ -23,6 +24,8 @@ void setup() {
     objectY[i] = random(height / 2);
     objectExists[i] = true;
   }
+
+  initializeObstacles(level);
 }
 
 void draw() {
@@ -36,6 +39,7 @@ void draw() {
   drawLife();
 
   checkCollision();
+  checkLevelUp();  // Tambah pemanggilan fungsi untuk memeriksa kenaikan level
 
   updatePaddle();
   updateBall();
@@ -61,6 +65,7 @@ void drawLife() {
   fill(255);
   textSize(24);
   text("Life: " + life, 650, 50);
+  text("Level: " + level, 650, 80);  // Tampilkan level
 }
 
 void drawObjects() {
@@ -134,5 +139,23 @@ void reset() {
 void keyPressed() {
   if (key == ' ') {
     loop();
+  }
+}
+
+void initializeObstacles(int level) {
+  for (int i = 0; i < numObjects * level; i++) {
+    // Pastikan i tidak melebihi panjang array (numObjects)
+    if (i < numObjects) {
+      objectX[i] = random(width - objectWidth);
+      objectY[i] = random(height / 2);
+      objectExists[i] = true;
+    }
+  }
+}
+
+void checkLevelUp() {
+  if (score >= level * 10) {  // Misalnya, naik level setiap 10 skor
+    level++;
+    initializeObstacles(level);  // Atur ulang rintangan berdasarkan level baru
   }
 }
