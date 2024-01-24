@@ -51,6 +51,8 @@ void draw() {
 void drawPaddle() {
   fill(255);
   rect(mouseX - w / 2, height - 50, w, h);
+  float paddleX = constrain(mouseX - w / 2, 0, width - w); 
+  rect(paddleX, height - 50, w, h); //agar paddle tidak keluar dari canvas
 }
 
 void drawBall() {
@@ -149,7 +151,7 @@ void reset() {
   }
   
 }
-void resetGame() {
+void resetGame() { //fungsi reset game
   life = 3;
   score = 0;
   level = 1;
