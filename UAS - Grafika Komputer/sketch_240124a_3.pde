@@ -1,6 +1,6 @@
 int x, y;
-int w = 200;
-int h = 200;
+int w = 150;  // Ubah nilai lebar paddle
+int h = 20;   // Ubah nilai tinggi paddle
 int dx = 5;
 int dy = 5;
 int score = 0;
@@ -13,6 +13,12 @@ float[] objectY = new float[numObjects];
 float objectWidth = 50;
 float objectHeight = 20;
 boolean[] objectExists = new boolean[numObjects];
+
+int[] lastAppearTime = new int[numObjects];
+int respawnInterval = 3000;  // Interval dalam milidetik (contoh: 3000ms = 3 detik)
+
+int gameState = 0;  // 0: Main Menu, 1: Game
+boolean gameStarted = false;
 
 void setup() {
   size(800, 800);
@@ -31,16 +37,32 @@ void setup() {
 void draw() {
   background(0);
 
-  drawObjects();  // Tambah pemanggilan fungsi baru untuk menggambar objek
+  if (gameState == 0) {
+    drawMainMenu();
+  } else if (gameState == 1) {
+    if (!gameStarted) {
+      resetGame();
+      gameStarted = true;
+    }
+    drawGame();
+  }
+}
 
+void drawMainMenu() {
+  fill(255);
+  textSize(48);
+  text("Press SPACE to Start", width / 2 - 250, height / 2);
+}
+
+void drawGame() {
+  drawObjects();
   drawPaddle();
   drawBall();
   drawScore();
   drawLife();
 
   checkCollision();
-  checkLevelUp();  // Tambah pemanggilan fungsi untuk memeriksa kenaikan level
-
+  checkLevelUp();
   updatePaddle();
   updateBall();
 }
@@ -48,6 +70,8 @@ void draw() {
 void drawPaddle() {
   fill(255);
   rect(mouseX - w / 2, height - 50, w, h);
+  float paddleX = constrain(mouseX - w / 2, 0, width - w);
+  rect(paddleX, height - 50, w, h);
 }
 
 void drawBall() {
@@ -65,15 +89,26 @@ void drawLife() {
   fill(255);
   textSize(24);
   text("Life: " + life, 650, 50);
-  text("Level: " + level, 650, 80);  // Tampilkan level
+  text("Level: " + level, 650, 80);
 }
 
 void drawObjects() {
-  fill(150, 150, 255);  // Warna objek
+  fill(150, 150, 255);
   for (int i = 0; i < numObjects; i++) {
     if (objectExists[i]) {
       rect(objectX[i], objectY[i], objectWidth, objectHeight);
+      checkRespawn(i);
     }
+  }
+}
+
+void checkRespawn(int index) {
+  int currentTime = millis();
+  if (!objectExists[index] && currentTime - lastAppearTime[index] > respawnInterval) {
+    objectX[index] = random(width - objectWidth);
+    objectY[index] = random(height / 2);
+    objectExists[index] = true;
+    lastAppearTime[index] = currentTime;
   }
 }
 
@@ -82,25 +117,24 @@ void checkCollision() {
     dx = -dx;
   }
 
-  if (y > height - 70 || y < 20) {
+  if (y < 20) {
     dy = -dy;
   }
 
   for (int i = 0; i < numObjects; i++) {
     if (objectExists[i] && x > objectX[i] && x < objectX[i] + objectWidth && y > objectY[i] && y < objectY[i] + objectHeight) {
-      objectExists[i] = false;  // Menghapus objek
+      objectExists[i] = false;
       score++;
-      dy = -dy;  // Memantulkan bola
+      dy = -dy;
     }
+    checkRespawn(i);
   }
 
-  if (dist(mouseX, height - 50, x, y) < 30) {
-    dx = -dx;
+  if (y + 10 > height - 50 && y < height - 50 && x > mouseX - w / 2 && x < mouseX + w / 2) {
     dy = -dy;
-    score++;
   }
 
-  if (x > width || x < 0 || y > height || y < 0) {
+  if (y > height) {
     life--;
     reset();
   }
@@ -136,15 +170,33 @@ void reset() {
   }
 }
 
+void resetGame() {
+  life = 3;
+  score = 0;
+  level = 1;
+
+  for (int i = 0; i < numObjects; i++) {
+    objectX[i] = random(width - objectWidth);
+    objectY[i] = random(height / 2);
+    objectExists[i] = true;
+  }
+
+  initializeObstacles(level);
+
+  loop();
+}
+
 void keyPressed() {
-  if (key == ' ') {
+  if (key == ' ' && gameState == 0) {
+    gameState = 1;
+  } else if (key == ' ' && gameState == 1) {
+    resetGame();
     loop();
   }
 }
 
 void initializeObstacles(int level) {
   for (int i = 0; i < numObjects * level; i++) {
-    // Pastikan i tidak melebihi panjang array (numObjects)
     if (i < numObjects) {
       objectX[i] = random(width - objectWidth);
       objectY[i] = random(height / 2);
@@ -154,8 +206,8 @@ void initializeObstacles(int level) {
 }
 
 void checkLevelUp() {
-  if (score >= level * 10) {  // Misalnya, naik level setiap 10 skor
+  if (score >= level * 10) {
     level++;
-    initializeObstacles(level);  // Atur ulang rintangan berdasarkan level baru
+    initializeObstacles(level);
   }
 }
