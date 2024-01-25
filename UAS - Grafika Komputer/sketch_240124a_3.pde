@@ -1,8 +1,8 @@
 int x, y;
 int w = 150;  // Ubah nilai lebar paddle
 int h = 20;   // Ubah nilai tinggi paddle
-int dx = 5;
-int dy = 5;
+float dx = 5;
+float dy = 5;  // Mengubah dy menjadi float untuk kecepatan yang dapat diubah
 int score = 0;
 int life = 3;
 int level = 1;
@@ -173,6 +173,7 @@ void resetGame() {
   life = 3;
   score = 0;
   level = 1;
+  dx = 5;  // Kembalikan kecepatan bola ke nilai awal
 
   for (int i = 0; i < numObjects; i++) {
     objectX[i] = random(width - objectWidth);
@@ -210,6 +211,7 @@ void initializeObstacles(int level) {
 void checkLevelUp() {
   if (score >= level * 10) {
     level++;
+    dx += 0.5;  // Tambahkan kecepatan setiap naik level
     initializeObstacles(level);
   }
 }
