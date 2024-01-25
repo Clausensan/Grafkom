@@ -17,7 +17,7 @@ boolean[] objectExists = new boolean[numObjects];
 int[] lastAppearTime = new int[numObjects];
 int respawnInterval = 3000;  // Interval dalam milidetik (contoh: 3000ms = 3 detik)
 
-int gameState = 0;  // 0: Main Menu, 1: Game
+int gameState = 0;  // 0: Main Menu, 1: Game, 2: Game Over
 boolean gameStarted = false;
 
 void setup() {
@@ -45,13 +45,15 @@ void draw() {
       gameStarted = true;
     }
     drawGame();
+  } else if (gameState == 2) {
+    drawGameOver();
   }
 }
 
 void drawMainMenu() {
   fill(255);
   textSize(48);
-  text("Press SPACE to Start", width / 2 - 250, height / 2);
+  text("Press SPACE to Start", width / 2 - 210, height / 2);
 }
 
 void drawGame() {
@@ -136,14 +138,11 @@ void checkCollision() {
 
   if (y > height) {
     life--;
-    reset();
-  }
-
-  if (life <= 0) {
-    fill(255);
-    textSize(48);
-    text("GAME OVER", width / 2 - 150, height / 2);
-    noLoop();
+    if (life <= 0) {
+      gameState = 2;  // Game over
+    } else {
+      reset();
+    }
   }
 }
 
@@ -192,6 +191,9 @@ void keyPressed() {
   } else if (key == ' ' && gameState == 1) {
     resetGame();
     loop();
+  } else if (key == ' ' && gameState == 2) {
+    gameState = 0;
+    gameStarted = false;
   }
 }
 
@@ -210,4 +212,12 @@ void checkLevelUp() {
     level++;
     initializeObstacles(level);
   }
+}
+
+void drawGameOver() {
+  fill(255);
+  textSize(48);
+  text("GAME OVER", width / 2 - 128, height / 2);
+  textSize(24);
+  text("Press SPACE to Play Again", width / 2 - 128, height / 2 + 50);
 }
