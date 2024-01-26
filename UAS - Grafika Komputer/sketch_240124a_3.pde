@@ -1,8 +1,9 @@
 int x, y;
 int w = 150;  // Ubah nilai lebar paddle
 int h = 20;   // Ubah nilai tinggi paddle
-float dx = 5;
-float dy = 5;  // Mengubah dy menjadi float untuk kecepatan yang dapat diubah
+float initialSpeed = 5;  // Atur kecepatan awal sesuai kebutuhan
+float dx = initialSpeed;
+float dy = initialSpeed;  // Mengubah dy menjadi float untuk kecepatan yang dapat diubah
 int score = 0;
 int life = 3;
 int level = 1;
@@ -97,10 +98,17 @@ void drawLife() {
 }
 
 void drawObjects() {
+  //fill(150, 150, 255);
+  //for (int i = 0; i < numObjects; i++) {
+  //  if (objectExists[i]) {
+  //    ellipse(objectX[i] + objectWidth / 2, objectY[i] + objectHeight / 2, objectWidth, objectHeight);
+  //    checkRespawn(i);
+  //  }
+  //}
   fill(150, 150, 255);
   for (int i = 0; i < numObjects; i++) {
     if (objectExists[i]) {
-      rect(objectX[i], objectY[i], objectWidth, objectHeight);
+      rect(objectX[i] + objectWidth / 2, objectY[i] + objectHeight / 2, objectWidth, objectHeight);
       checkRespawn(i);
     }
   }
@@ -109,10 +117,22 @@ void drawObjects() {
 void checkRespawn(int index) {
   int currentTime = millis();
   if (!objectExists[index] && currentTime - lastAppearTime[index] > respawnInterval) {
-    objectX[index] = random(width - objectWidth);
-    objectY[index] = random(height / 2);
-    objectExists[index] = true;
-    lastAppearTime[index] = currentTime;
+    boolean overlap = false;
+
+    // Check for overlap with other objects
+    for (int i = 0; i < numObjects; i++) {
+      if (i != index && objectExists[i] && dist(objectX[index], objectY[index], objectX[i], objectY[i]) < objectWidth) {
+        overlap = true;
+        break;
+      }
+    }
+
+    if (!overlap) {
+      objectX[index] = random(width - objectWidth);
+      objectY[index] = random(height / 2);
+      objectExists[index] = true;
+      lastAppearTime[index] = currentTime;
+    }
   }
 }
 
@@ -126,7 +146,7 @@ void checkCollision() {
   }
 
   for (int i = 0; i < numObjects; i++) {
-    if (objectExists[i] && x > objectX[i] && x < objectX[i] + objectWidth && y > objectY[i] && y < objectY[i] + objectHeight) {
+    if (objectExists[i] && dist(x, y, objectX[i] + objectWidth / 2, objectY[i] + objectHeight / 2) < 20) {
       objectExists[i] = false;
       score++;
       dy = -dy;
@@ -217,7 +237,8 @@ void initializeObstacles(int level) {
 void checkLevelUp() {
   if (score >= level * 10) {
     level++;
-    dx += 0.5;  // Tambahkan kecepatan setiap naik level
+    dx = initialSpeed + level * 0.5;
+    dy = initialSpeed + level * 0.5;
     initializeObstacles(level);
   }
 }
