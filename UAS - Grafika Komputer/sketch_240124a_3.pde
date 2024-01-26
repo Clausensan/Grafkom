@@ -6,6 +6,8 @@ float dy = 5;  // Mengubah dy menjadi float untuk kecepatan yang dapat diubah
 int score = 0;
 int life = 3;
 int level = 1;
+int highScore = 0;
+
 
 int numObjects = 5;  // Jumlah objek
 float[] objectX = new float[numObjects];
@@ -170,6 +172,10 @@ void reset() {
 }
 
 void resetGame() {
+  if (score > highScore) {
+    highScore = score;
+  }
+  
   life = 3;
   score = 0;
   level = 1;
@@ -221,5 +227,7 @@ void drawGameOver() {
   textSize(48);
   text("GAME OVER", width / 2 - 128, height / 2);
   textSize(24);
-  text("Press SPACE to Play Again", width / 2 - 128, height / 2 + 50);
+  text("Score: " + score, width / 2 - 48, height / 2 + 50);
+  text("High Score: " + highScore, width / 2 - 80, height / 2 + 80);
+  text("Press SPACE to Play Again", width / 2 - 128, height / 2 + 110);
 }
